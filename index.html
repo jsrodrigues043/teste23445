@@ -1,0 +1,628 @@
+Usuário: criar site igual a youtube
+
+use.ai: Segue um protótipo completo de um site de vídeos inspirado no YouTube, com busca, categorias, menu lateral e layout responsivo. Salve como index.html e abra no navegador.
+
+``html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VideoPlay</title>
+
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #212121;
+      --surface-hover: #303030;
+      --text: #f1f1f1;
+      --muted: #aaa;
+      --accent: #ff0033;
+      --border: #3f3f3f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 20px;
+      background: var(--bg);
+    }
+
+    .brand-area,
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      font-size: 20px;
+    }
+
+    .icon-button:hover {
+      background: var(--surface-hover);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 21px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .logo-symbol {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 24px;
+      border-radius: 7px;
+      background: var(--accent);
+      color: white;
+      font-size: 13px;
+    }
+
+    .search {
+      display: flex;
+      flex: 1;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .search input {
+      width: 100%;
+      min-width: 0;
+      padding: 11px 18px;
+      border: 1px solid var(--border);
+      border-radius: 24px 0 0 24px;
+      outline: none;
+      background: #121212;
+      color: white;
+      font-size: 16px;
+    }
+
+    .search input:focus {
+      border-color: #1c62b9;
+    }
+
+    .search button {
+      width: 66px;
+      border: 1px solid var(--border);
+      border-left: 0;
+      border-radius: 0 24px 24px 0;
+      background: var(--surface);
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #8e44ad;
+      font-weight: 700;
+    }
+
+    aside {
+      position: fixed;
+      top: 64px;
+      bottom: 0;
+      left: 0;
+      z-index: 5;
+      width: 230px;
+      padding: 12px;
+      overflow-y: auto;
+      background: var(--bg);
+      transition: width 0.2s, transform 0.2s;
+    }
+
+    aside.compact {
+      width: 78px;
+    }
+
+    aside.compact .menu-label {
+      display: none;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      text-align: left;
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      background: var(--surface-hover);
+    }
+
+    .menu-icon {
+      width: 26px;
+      text-align: center;
+      font-size: 19px;
+    }
+
+    main {
+      margin-left: 230px;
+      padding: 76px 24px 40px;
+      transition: margin-left 0.2s;
+    }
+
+    main.expanded {
+      margin-left: 78px;
+    }
+
+    .categories {
+      position: sticky;
+      top: 64px;
+      z-index: 4;
+      display: flex;
+      gap: 12px;
+      padding: 12px 0 18px;
+      overflow-x: auto;
+      background: var(--bg);
+    }
+
+    .category {
+      flex: none;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--surface);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .category:hover {
+      background: var(--surface-hover);
+    }
+
+    .category.active {
+      background: white;
+      color: #111;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 34px 18px;
+      padding-top: 12px;
+    }
+
+    .video-card {
+      cursor: pointer;
+    }
+
+    .thumbnail {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 12px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.12), transparent),
+        var(--thumb);
+      font-size: 54px;
+      transition: border-radius 0.2s, transform 0.2s;
+    }
+
+    .video-card:hover .thumbnail {
+      border-radius: 2px;
+      transform: scale(1.01);
+    }
+
+    .duration {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      padding: 3px 5px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.8);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .video-info {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .channel-avatar {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--thumb);
+      font-weight: 700;
+    }
+
+    .video-title {
+      display: -webkit-box;
+      margin: 0 0 7px;
+      overflow: hidden;
+      font-size: 16px;
+      line-height: 1.35;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .channel,
+    .stats {
+      margin: 3px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 70px 20px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 1200px) {
+      .video-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      aside {
+        transform: translateX(-100%);
+      }
+
+      aside.open {
+        width: 230px;
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.45);
+      }
+
+      main,
+      main.expanded {
+        margin-left: 0;
+      }
+
+      .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .actions .hide-mobile {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        gap: 8px;
+        padding: 0 10px;
+      }
+
+      .logo span:last-child {
+        display: none;
+      }
+
+      .search {
+        margin: 0;
+      }
+
+      .search input {
+        padding-inline: 12px;
+      }
+
+      main {
+        padding-inline: 12px;
+      }
+
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand-area">
+      <button class="icon-button" id="menuButton" aria-label="Abrir menu">☰</button>
+
+      <div class="logo">
+        <span class="logo-symbol">▶</span>
+        <span>VideoPlay</span>
+      </div>
+    </div>
+
+    <form class="search" id="searchForm">
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Pesquisar vídeos"
+        aria-label="Pesquisar vídeos"
+      >
+      <button type="submit" aria-label="Pesquisar">⌕</button>
+    </form>
+
+    <div class="actions">
+      <button class="icon-button hide-mobile" aria-label="Criar vídeo">＋</button>
+      <button class="icon-button hide-mobile" aria-label="Notificações">♢</button>
+      <div class="avatar">V</div>
+    </div>
+  </header>
+
+  <aside id="sidebar">
+    <button class="menu-item active">
+      <span class="menu-icon">⌂</span>
+      <span class="menu-label">Início</span>
+    </button>
+
+    <button class="menu-item">
+      <span class="menu-icon">▷</span>
+      <span class="menu-label">Shorts</span>
+    </button>
+
+    <button class="menu-item">
+      <span class="menu-icon">▣</span>
+      <span class="menu-label">Inscrições</span>
+    </button>
+
+    <hr style="border-color:#333; border-width:1px 0 0; margin:12px 0">
+
+    <button class="menu-item">
+      <span class="menu-icon">▤</span>
+      <span class="menu-label">Biblioteca</span>
+    </button>
+
+    <button class="menu-item">
+      <span class="menu-icon">◷</span>
+      <span class="menu-label">Histórico</span>
+    </button>
+
+    <button class="menu-item">
+      <span class="menu-icon">♡</span>
+      <span class="menu-label">Vídeos curtidos</span>
+    </button>
+  </aside>
+
+  <main id="main">
+    <nav class="categories" id="categories"></nav>
+    <section class="video-grid" id="videoGrid"></section>
+  </main>
+
+  <script>
+    const videos = [
+      {
+        title: "Aprenda JavaScript do zero em uma aula",
+        channel: "Código Fácil",
+        views: "1,2 mi de visualizações",
+        date: "há 2 semanas",
+        duration: "18:42",
+        category: "Programação",
+        icon: "💻",
+        color: "#275dad"
+      },
+      {
+        title: "As paisagens mais incríveis do Brasil",
+        channel: "Mundo Afora",
+        views: "840 mil visualizações",
+        date: "há 1 mês",
+        duration: "12:10",
+        category: "Viagens",
+        icon: "🏞️",
+        color: "#087f5b"
+      },
+      {
+        title: "Música relaxante para estudar e trabalhar",
+        channel: "Som Ambiente",
+        views: "4,7 mi de visualizações",
+        date: "há 6 meses",
+        duration: "1:05:32",
+        category: "Música",
+        icon: "🎧",
+        color: "#7048e8"
+      },
+      {
+        title: "10 curiosidades científicas surpreendentes",
+        channel: "Universo Curioso",
+        views: "625 mil visualizações",
+        date: "há 5 dias",
+        duration: "09:25",
+        category: "Ciência",
+        icon: "🔬",
+        color: "#c92a2a"
+      },
+      {
+        title: "Como preparar uma pizza caseira perfeita",
+        channel: "Cozinha Prática",
+        views: "931 mil visualizações",
+        date: "há 3 semanas",
+        duration: "14:08",
+        category: "Culinária",
+        icon: "🍕",
+        color: "#e67700"
+      },
+      {
+        title: "Os melhores momentos dos games clássicos",
+        channel: "Arena Gamer",
+        views: "2,3 mi de visualizações",
+        date: "há 4 meses",
+        duration: "22:31",
+        category: "Jogos",
+        icon: "🎮",
+        color: "#0b7285"
+      },
+      {
+        title: "Treino rápido para fazer em casa",
+        channel: "Vida em Movimento",
+        views: "358 mil visualizações",
+        date: "há 8 dias",
+        duration: "11:46",
+        category: "Esportes",
+        icon: "🏋️",
+        color: "#d6336c"
+      },
+      {
+        title: "Construindo um aplicativo moderno passo a passo",
+        channel: "Dev Brasil",
+        views: "210 mil visualizações",
+        date: "há 1 semana",
+        duration: "34:17",
+        category: "Programação",
+        icon: "📱",
+        color: "#1864ab"
+      }
+    ];
+
+    const categories = [
+      "Todos",
+      ...new Set(videos.map(video => video.category))
+    ];
+
+    const grid = document.getElementById("videoGrid");
+    const categoryBar = document.getElementById("categories");
+    const searchForm = document.getElementById("searchForm");
+    const searchInput = document.getElementById("searchInput");
+    const sidebar = document.getElementById("sidebar");
+    const main = document.getElementById("main");
+
+    let currentCategory = "Todos";
+    let currentSearch = "";
+
+    function renderCategories() {
+      categoryBar.innerHTML = categories.map(category => 
+        <button
+          class="category ${category === currentCategory ? "active" : ""}"
+          data-category="${category}"
+        >
+          ${category}
+        </button>
+      ).join("");
+
+      document.querySelectorAll(".category").forEach(button => {
+        button.addEventListener("click", () => {
+          currentCategory = button.dataset.category;
+          renderCategories();
+          renderVideos();
+        });
+      });
+    }
+
+    function renderVideos() {
+      const query = currentSearch.toLowerCase().trim();
+
+      const filtered = videos.filter(video => {
+        const matchesCategory =
+          currentCategory === "Todos" ||
+          video.category === currentCategory;
+
+        const searchableText =
+          ${video.title} ${video.channel} ${video.category}.toLowerCase();
+
+        return matchesCategory && searchableText.includes(query);
+      });
+
+      if (!filtered.length) {
+        grid.innerHTML = 
+          <div class="empty">
+            Nenhum vídeo encontrado.
+          </div>
+        ;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(video => 
+        <article class="video-card">
+          <div
+            class="thumbnail"
+            style="--thumb:${video.color}"
+            title="${video.title}"
+          >
+            <span>${video.icon}</span>
+            <span class="duration">${video.duration}</span>
+          </div>
+
+          <div class="video-info">
+            <div
+              class="channel-avatar"
+              style="--thumb:${video.color}"
+            >
+              ${video.channel.charAt(0)}
+            </div>
+
+            <div>
+              <h2 class="video-title">${video.title}</h2>
+              <p class="channel">${video.channel} ✓</p>
+              <p class="stats">${video.views} • ${video.date}</p>
+            </div>
+          </div>
+        </article>
+      ).join("");
+    }
+
+    searchForm.addEventListener("submit", event => {
+      event.preventDefault();
+      currentSearch = searchInput.value;
+      renderVideos();
+    });
+
+    searchInput.addEventListener("input", () => {
+      currentSearch = searchInput.value;
+      renderVideos();
+    });
+
+    document.getElementById("menuButton").addEventListener("click", () => {
+      if (window.innerWidth <= 900) {
+        sidebar.classList.toggle("open");
+      } else {
+        sidebar.classList.toggle("compact");
+        main.classList.toggle("expanded");
+      }
+    });
+
+    renderCategories();
+    renderVideos();
+  </script>
+</body>
+</html>
+``
+
+Esse código cobre a interface inicial. Para virar uma plataforma real, ainda precisa de backend, contas de usuário, banco de dados, upload e processamento de vídeos, comentários, inscrições e armazenamento em nuvem.
